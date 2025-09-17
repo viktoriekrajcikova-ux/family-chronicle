@@ -9,7 +9,7 @@ type Props = {
 export default function TripCard( {trip, withLink = false}: Props) {
     return (
     <>
-        <div style={{ border: "1px solid #ccc", padding: "10px", marginBottom: "10px" }}>
+        <div className="trip-card">
             <img src={trip.imageUrl} alt={trip.title} width="200" />
         <h2>
             {withLink ? (

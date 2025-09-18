@@ -1,5 +1,4 @@
 import { useParams, Link } from "react-router-dom";
-import { trips } from "../data/trips";
 import type { Trip } from "../data/trips";
 import TripCard from "../components/TripCard";
 
@@ -7,7 +6,11 @@ type TripDetailParams = {
   id: string; // vždycky přijde string z URL
 };
 
-export default function TripDetail() {
+type TripDetailProps = {
+  trips: Trip[];
+}
+
+export default function TripDetail({trips}: TripDetailProps) {
     const { id } = useParams<{id: string}>();
     const trip: Trip | undefined = trips.find(t => t.id === Number(id))
    

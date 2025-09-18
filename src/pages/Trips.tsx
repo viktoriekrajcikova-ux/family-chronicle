@@ -1,7 +1,11 @@
-import { trips } from "../data/trips";
+import type { Trip } from "../data/trips";
 import TripCard from "../components/TripCard";
 
-export default function Trips() {
+type TripProps = {
+  trips: Trip[];
+}
+
+export default function Trips({trips}: TripProps) {
   return <>
     <h1>Seznam výletů</h1>
     {trips.map(trip => (

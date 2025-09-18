@@ -1,7 +1,11 @@
 import { useState } from "react";
 import type { Trip } from "../data/trips";
 
-export default function AddTrip() {
+type AddTripProps = {
+  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
+}
+
+export default function AddTrip({setTrips}: AddTripProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -15,10 +19,10 @@ export default function AddTrip() {
       title,
       description,
       date,
-      image: image || "https://via.placeholder.com/200",
+      imageUrl: image || "https://via.placeholder.com/200",
     };
 
-    console.log("novy vylet pridan", newTrip);
+    setTrips(prev => [...prev, newTrip])
 
     setTitle("");
     setDescription("");

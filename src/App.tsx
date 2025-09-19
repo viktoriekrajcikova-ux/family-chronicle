@@ -14,16 +14,14 @@ export default function App() {
 
   return (
     <>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/trips" element={<Trips trips={trips}/>} />
-          <Route path="/trips/:id" element={<TripDetail trips={trips}/>} />
-          <Route path="/add" element={<AddTrip setTrips={setTrips}/>} />
-          <Route path="/about" element={<About />} />
-        </Routes>
-    </Router>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/trips" element={<Trips trips={trips}/>} />
+        <Route path="/trips/:id" element={<TripDetail trips={trips}/>} />
+        <Route path="/add" element={<AddTrip setTrips={setTrips}/>} />
+        <Route path="/about" element={<About />} />
+      </Routes>
     </>
   )
 }

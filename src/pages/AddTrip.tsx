@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Trip } from "../data/trips";
 
 type AddTripProps = {
@@ -10,6 +11,7 @@ export default function AddTrip({setTrips}: AddTripProps) {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [image, setImage] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +24,8 @@ export default function AddTrip({setTrips}: AddTripProps) {
       imageUrl: image || "https://via.placeholder.com/200",
     };
 
-    setTrips(prev => [...prev, newTrip])
+    setTrips(prev => [...prev, newTrip]);
+    navigate("/");
 
     setTitle("");
     setDescription("");

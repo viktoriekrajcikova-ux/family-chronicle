@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Trip } from "../data/trips";
+import { supabase } from "../data/supabaseClient";
 
 type AddTripProps = {
   setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
@@ -10,28 +11,29 @@ export default function AddTrip({setTrips}: AddTripProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
-  const [image, setImage] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newTrip: Trip = {
-      id: Date.now(),
-      title,
-      description,
-      date,
-      imageUrl: image || "https://via.placeholder.com/200",
-    };
+    const { data, error } = await supabase
+      .from("trips")
+      .insert([{ title, description, date, imageUrl }])
+      .select();
 
-    setTrips(prev => [...prev, newTrip]);
-    navigate("/");
+    if (error) {
+      console.error(error.message);
+      return;
+    }
 
-    setTitle("");
-    setDescription("");
-    setDate("");
-    setImage("");
-  }
+    const tripsData = (data ?? []) as Trip[];
+    if (!tripsData[0]) {
+      console.error("Trip nebyl vložen!");
+      return;
+    }
+    navigate(`/trips/${tripsData[0].id}`);
+  };
 
   return (
     <div>
@@ -66,8 +68,8 @@ export default function AddTrip({setTrips}: AddTripProps) {
           <label>Obrázek: </label>
           <input
             type="text"
-            value={image}
-            onChange={e => setImage(e.target.value)}
+            value={imageUrl}
+            onChange={e => setImageUrl(e.target.value)}
           />
         </div>
         <button type="submit">Uložit výlet</button>

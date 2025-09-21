@@ -1,32 +1,63 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import type { Trip } from "../data/trips";
 import TripCard from "../components/TripCard";
+import { supabase } from "../data/supabaseClient";
 
-type TripDetailParams = {
-  id: string; // vždycky přijde string z URL
-};
+export default function TripDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-type TripDetailProps = {
-  trips: Trip[];
-  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
-}
+  const [trip, setTrip] = useState<Trip | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export default function TripDetail({trips, setTrips}: TripDetailProps) {
-    const { id } = useParams<{id: string}>();
-    const trip: Trip | undefined = trips.find(t => t.id === Number(id))
-    const navigate = useNavigate();
+  useEffect(() => {
+    const numericId = Number(id);
+    if (!id || isNaN(numericId)) {
+      console.error("Invalid trip ID:", id);
+      navigate("/trips");
+      return;
+    }
 
-    if (!trip) return <h1>Vylet nenalezen</h1>
-    const handleDelete = () => {
-        setTrips(prev => prev.filter(t => t.id !== trip.id))
-        navigate("/")
+    const fetchTrip = async () => {
+      const { data, error } = await supabase
+        .from("trips")
+        .select("*")
+        .eq("id", numericId)
+        .single();
+
+      if (error) {
+        console.error("Supabase fetch error:", error.message);
+        navigate("/trips");
+        return;
+      }
+
+      setTrip(data);
+      setLoading(false);
     };
-    return (<>
-        <TripCard trip={trip} />
-        <br />
-        <br />
-        <button onClick={handleDelete}>Smazat</button>
-        <Link to={`/edit/${trip.id}`}>Upravit</Link>
-        <Link to="/trips">Zpet na seznam</Link>
-    </>)
+
+    fetchTrip();
+  }, [id, navigate]);
+
+  if (loading) return <p>Loading...</p>;
+  if (!trip) return <h1>Výlet nenalezen</h1>;
+
+  const handleDelete = async () => {
+    const { error } = await supabase.from("trips").delete().eq("id", trip.id);
+    if (error) {
+      console.error(error.message);
+      return;
+    }
+    navigate("/trips");
+  };
+
+  return (
+    <>
+      <h1>Trip Detail</h1>
+      <TripCard trip={trip} />
+      <button onClick={handleDelete}>Smazat</button>
+      <button onClick={() => navigate(`/edit/${trip.id}`)}>Upravit</button>
+      <Link to="/trips">Zpět na seznam</Link>
+    </>
+  );
 }

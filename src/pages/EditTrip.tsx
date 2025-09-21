@@ -1,50 +1,84 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import type { Trip } from "../data/trips";
+import { supabase } from "../data/supabaseClient";
 
-type EditTripProps = {
-    trips: Trip[];
-    setTrips: React.Dispatch<React.SetStateAction<Trip[]>>
-}
-
-export default function EditTrip({trips, setTrips}: EditTripProps) {
-    const { id } = useParams();
+export default function EditTrip() {
+    const { id } = useParams<{ id: string }>();
+    console.log(id, "idParams")
     const navigate = useNavigate();
-    const trip = trips.find(t => t.id === Number(id));
-    
+    const [trip, setTrip] = useState<Trip | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [date, setDate] = useState("");
+    const [imageUrl, setImageUrl] = useState("");
+
     useEffect(() => {
-        if (!trip) {
-        navigate("/"); 
+        const numericId = Number(id);
+        console.log(numericId, "numericId")
+
+        if (!id || isNaN(numericId)) {
+        console.error("Invalid trip ID:", id);
+        navigate("/"); // redirect na hlavní stránku
+        return;
         }
-    }, [trip, navigate]);
 
-    // pokud je undefined → nastaví prázdný string
-    const [title, setTitle] = useState(trip?.title ?? "");
-    const [description, setDescription] = useState(trip?.description ?? "");
-    const [date, setDate] = useState(trip?.date ?? "");
-    const [image, setImage] = useState(trip?.imageUrl ?? "");
+        const fetchTrip = async () => {
+        const { data, error } = await supabase
+            .from("trips")
+            .select("*")
+            .eq("id", numericId)
+            .single();
 
-    const handleSubmit = (e: React.FormEvent) => {
+        if (error) {
+            console.error("Supabase fetch error:", error.message);
+            navigate("/"); // pokud nenajde, redirect
+            return;
+        }
 
-    e.preventDefault();
+        if (data) {
+            setTrip(data);
+            setTitle(data.title);
+            setDescription(data.description);
+            setDate(data.date);
+            setImageUrl(data.imageUrl ?? "");
+        }
 
-    if (!trip) return;
+        setLoading(false);
+        };
 
-    const updatedTrip: Trip = {
-      ...trip,
-      title,
-      description,
-      date,
-      imageUrl: image,
+        fetchTrip();
+    }, [id, navigate]);
+
+
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!trip) return;
+
+        const { data, error } = await supabase
+        .from("trips")
+        .update({ title, description, date, imageUrl })
+        .eq("id", trip.id)
+        .select();
+
+        if (error) {
+            console.error("Supabase update error:", error.message);
+            return;
+        }
+
+        const updatedTrip = (data ?? [])[0];
+        if (updatedTrip) {
+            setTrip(updatedTrip)
+        }
+
+        navigate(`/trips/${trip.id}`);
     };
 
-    setTrips(prev =>
-      prev.map(t => (t.id === trip.id ? updatedTrip : t))
-    );
-
-    navigate(`/trips/${trip.id}`);
-}
-
+    if (loading) return <p>Loading...</p>;
 
     return (
         <>
@@ -73,8 +107,8 @@ export default function EditTrip({trips, setTrips}: EditTripProps) {
             />
             <input
                 type="text"
-                value={image}
-                onChange={e => setImage(e.target.value)}
+                value={imageUrl}
+                onChange={e => setImageUrl(e.target.value)}
                 placeholder="URL obrázku"
             />
             <button type="submit">Uložit změny</button>

@@ -5,7 +5,7 @@ import { supabase } from "../data/supabaseClient";
 
 export default function EditTrip() {
     const { id } = useParams<{ id: string }>();
-    console.log(id, "idParams")
+
     const navigate = useNavigate();
     const [trip, setTrip] = useState<Trip | null>(null);
     const [loading, setLoading] = useState(true);
@@ -17,7 +17,6 @@ export default function EditTrip() {
 
     useEffect(() => {
         const numericId = Number(id);
-        console.log(numericId, "numericId")
 
         if (!id || isNaN(numericId)) {
         console.error("Invalid trip ID:", id);

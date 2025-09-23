@@ -8,6 +8,7 @@ import AddTrip from "./pages/AddTrip";
 import About from "./pages/About";
 import EditTrip from "./pages/EditTrip";
 import { supabase } from "./data/supabaseClient";
+import TripsList from "./pages/TripsList";
 
 export default function App() {
   const [trips, setTrips] = useState<any[]>([]);
@@ -25,7 +26,7 @@ export default function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/trips" element={<Trips trips={trips}/>} />
+        <Route path="/trips" element={<TripsList />}/>
         <Route path="/trips/:id" element={<TripDetail/>} />
         <Route path="/add" element={<AddTrip setTrips={setTrips}/>} />
         <Route path="/about" element={<About />} />

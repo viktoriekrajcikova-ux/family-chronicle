@@ -1,39 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Trip } from "../data/trips";
-import { supabase } from "../data/supabaseClient";
+import { useTrips } from "../context/TripsContext";
 
-type AddTripProps = {
-  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
-}
-
-export default function AddTrip({setTrips}: AddTripProps) {
+export default function AddTrip() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const navigate = useNavigate();
+  const { addTrip, trips } = useTrips();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { data, error } = await supabase
-      .from("trips")
-      .insert([{ title, description, date, imageUrl }])
-      .select();
-
-    if (error) {
-      console.error(error.message);
-      return;
+    await addTrip({ title, description, date, imageUrl });
+    const newTrip = trips[trips.length - 1];
+    
+    if (newTrip) {
+      navigate(`/trips/${newTrip.id}`);
     }
+  }
 
-    const tripsData = (data ?? []) as Trip[];
-    if (!tripsData[0]) {
-      console.error("Trip nebyl vložen!");
-      return;
-    }
-    navigate(`/trips/${tripsData[0].id}`);
-  };
 
   return (
     <div>

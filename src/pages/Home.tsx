@@ -8,10 +8,10 @@ export default function Home() {
 
       <div style={{ marginTop: "20px" }}>
         <Link to="/trips">
-          <button style={{ marginRight: "10px" }}>📖 Seznam výletů</button>
+          <button style={{ marginRight: "10px" }}>Seznam výletů</button>
         </Link>
         <Link to="/add">
-          <button>➕ Přidat nový výlet</button>
+          <button>Přidat nový výlet</button>
         </Link>
       </div>
     </div>

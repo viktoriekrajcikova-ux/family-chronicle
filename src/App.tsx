@@ -1,26 +1,13 @@
-import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
-import Trips from "./pages/Trips";
 import TripDetail from "./pages/TripDetail";
 import AddTrip from "./pages/AddTrip";
 import About from "./pages/About";
 import EditTrip from "./pages/EditTrip";
-import { supabase } from "./data/supabaseClient";
 import TripsList from "./pages/TripsList";
 
 export default function App() {
-  const [trips, setTrips] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchTrips = async () => {
-      const { data, error } = await supabase.from("trips").select("*");
-      if (data) setTrips(data);
-    };
-    fetchTrips();
-  }, []);
-
   return (
     <>
       <Navbar />
@@ -28,7 +15,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/trips" element={<TripsList />}/>
         <Route path="/trips/:id" element={<TripDetail/>} />
-        <Route path="/add" element={<AddTrip setTrips={setTrips}/>} />
+        <Route path="/add" element={<AddTrip />} />
         <Route path="/about" element={<About />} />
         <Route path="/edit/:id" element={<EditTrip/>} />
       </Routes>

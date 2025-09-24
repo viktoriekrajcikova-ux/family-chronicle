@@ -1,47 +1,24 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import type { Trip } from "../data/trips";
-import { supabase } from "../data/supabaseClient";
+import { useTrips } from "../context/TripsContext";
 import TripCard from "../components/TripCard";
 
-export default function TripsList() {
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function TripList() {
+  const { trips, loading } = useTrips();
 
-    useEffect(() => {
-        const fetchTrips = async () => {
-        const { data, error } = await supabase.from("trips").select("*");
+  if (loading) return <p>Načítám výlety...</p>;
+  if (trips.length === 0) return <p>Zatím žádné výlety nejsou.</p>;
 
-        if (error) {
-            console.error("Error fetching trips:", error.message);
-            setError(error.message);
-            setLoading(false);
-            return;
-        }
-
-        setTrips(data || []);
-        setLoading(false);
-    };
-
-    fetchTrips();
-  }, []);
-
-    if (loading) return <p>Načítám výlety...</p>;
-    if (error) return <p>Chyba: {error}</p>;
-    if (trips.length === 0) return <p>Zatím nemáš žádné výlety.</p>;
-
-    return (
-        <div>
-        <h1>Seznam výletů</h1>
-        <Link to="/add">➕ Přidat nový výlet</Link>
-        <div style={{ marginTop: "20px" }}>
-            {trips.map(trip => (
-            <Link key={trip.id} to={`/trips/${trip.id}`} style={{ textDecoration: "none" }}>
-                <TripCard trip={trip} />
-            </Link>
-            ))}
-        </div>
-        </div>
+  return (
+    <div>
+      <h1>Seznam výletů</h1>
+      <Link to="/add">Přidat výlet</Link>
+      <div>
+        {trips.map((trip) => (
+          <Link key={trip.id} to={`/trips/${trip.id}`}>
+            <TripCard trip={trip} />
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }

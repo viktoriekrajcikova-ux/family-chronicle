@@ -6,7 +6,7 @@ export default function EditTrip() {
     const { id } = useParams<{ id: string }>();
 
     const navigate = useNavigate();
-    const { trips, editTrip } = useTrips();
+    const { trips, updateTrip } = useTrips();
     const [loading, setLoading] = useState(false);
 
     const [title, setTitle] = useState("");
@@ -40,7 +40,7 @@ export default function EditTrip() {
         if (!id) return;
 
         const numericId = Number(id);
-        await editTrip(numericId, { title, description, date, imageUrl });
+        await updateTrip(numericId, { title, description, date, imageUrl });
 
         navigate(`/trips/${numericId}`);
     };

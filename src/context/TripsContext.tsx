@@ -1,88 +1,61 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../data/supabaseClient";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { Trip } from "../data/trips";
+import * as tripsService from "../services/tripsService"
 
 type TripsContextType = {
   trips: Trip[];
-  loading: boolean;
-  fetchTrips: () => Promise<void>;
-  addTrip: (trip: Omit<Trip, "id">) => Promise<void>;
-  editTrip: (id: number, updates: Partial<Trip>) => Promise<void>;
-  deleteTrip: (id: number) => Promise<void>;
-  getTripById: (id: number) => Trip | undefined;
+
+  addTrip: (tripData: Omit<Trip, "id">) => Promise<Trip | null>;
+  updateTrip: (id: number, tripData: Partial<Trip>) => Promise<Trip | null>;
+  deleteTrip: (id: number) => Promise<boolean>;
 };
 
 const TripsContext = createContext<TripsContextType | undefined>(undefined);
 
-export function TripsProvider({ children }: { children: React.ReactNode }) {
+export const TripsProvider = ({ children }: { children: React.ReactNode }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchTrips = async () => {
-    setLoading(true);
-    const { data, error } = await supabase.from("trips").select("*").order("date", { ascending: true });
-    if (error) {
-      console.error("Chyba při načítání výletů:", error.message);
-    } else {
-      setTrips(data as Trip[]);
-    }
-    setLoading(false);
-  };
 
   useEffect(() => {
-    fetchTrips();
+    const loadTrips = async () => {
+      const data = await tripsService.fetchTrips();
+      setTrips(data);
+    };
+    loadTrips();
   }, []);
 
-  // add
-  const addTrip = async (trip: Omit<Trip, "id">) => {
-    const { data, error } = await supabase.from("trips").insert([trip]).select();
-    if (error) {
-      console.error("Chyba při přidání tripu:", error.message);
-      return;
+  const addTrip = async (tripData: Omit<Trip, "id">) => {
+    const newTrip = await tripsService.addTrip(tripData);
+    if (newTrip) {
+      setTrips(prev => [...prev, newTrip]);
     }
-    if (data) setTrips((prev) => [...prev, data[0]]);
+    return newTrip;
   };
 
-  // edit
-  const editTrip = async (id: number, updates: Partial<Trip>) => {
-    const { data, error } = await supabase
-      .from("trips")
-      .update(updates)
-      .eq("id", id)
-      .select();
-    if (error) {
-      console.error("Chyba při editaci tripu:", error.message);
-      return;
+  const updateTrip = async (id: number, tripData: Partial<Trip>) => {
+    const updated = await tripsService.updateTrip(id, tripData);
+    if (updated) {
+      setTrips(prev => prev.map(t => (t.id === id ? updated : t)));
     }
-    if (data) {
-      setTrips((prev) => prev.map((t) => (t.id === id ? data[0] : t)));
-    }
+    return updated;
   };
 
-  // delete
   const deleteTrip = async (id: number) => {
-    const { error } = await supabase.from("trips").delete().eq("id", id);
-    if (error) {
-      console.error("Chyba při mazání tripu:", error.message);
-      return;
+    const success = await tripsService.deleteTrip(id);
+    if (success) {
+      setTrips(prev => prev.filter(t => t.id !== id));
     }
-    setTrips((prev) => prev.filter((t) => t.id !== id));
+    return success;
   };
-
-  // getTrip
-  const getTripById = (id: number) => trips.find((t) => t.id === id);
 
   return (
-    <TripsContext.Provider
-      value={{ trips, loading, fetchTrips, addTrip, editTrip, deleteTrip, getTripById }}
-    >
+    <TripsContext.Provider value={{ trips, addTrip, updateTrip, deleteTrip }}>
       {children}
     </TripsContext.Provider>
   );
-}
+};
 
-export function useTrips() {
+export const useTrips = () => {
   const ctx = useContext(TripsContext);
-  if (!ctx) throw new Error("useTrips must be used within a TripsProvider");
+  if (!ctx) throw new Error("useTrips must be used within TripsProvider");
   return ctx;
-}
+};

@@ -8,18 +8,19 @@ export default function AddTrip() {
   const [date, setDate] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const navigate = useNavigate();
-  const { addTrip, trips } = useTrips();
+  const { addTrip } = useTrips();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    await addTrip({ title, description, date, imageUrl });
-    const newTrip = trips[trips.length - 1];
-    
+    const newTrip = await addTrip({ title, description, date, imageUrl });
+
     if (newTrip) {
       navigate(`/trips/${newTrip.id}`);
+    } else {
+      console.error("Trip se nepodařilo přidat");
     }
-  }
+  };
 
 
   return (

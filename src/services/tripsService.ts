@@ -1,14 +1,16 @@
 import { supabase } from "../data/supabaseClient";
 import type { Trip } from "../data/trips";
 
-export const fetchTrips = async (): Promise<Trip[]> => {
-  const { data, error } = await supabase.from("trips").select("*");
-  if (error) {
-    console.error("Supabase fetch error:", error.message);
-    return [];
-  }
-  return data ?? [];
-};
+
+export async function fetchTrips(): Promise<Trip[]> {
+  const { data, error } = await supabase
+    .from("trips")
+    .select("*")
+    .order("date", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data as Trip[];
+}
 
 export const addTrip = async (tripData: Omit<Trip, "id">): Promise<Trip | null> => {
   const { data, error } = await supabase
@@ -47,3 +49,17 @@ export const deleteTrip = async (id: number): Promise<boolean> => {
   }
   return true;
 };
+
+export async function fetchTripByIdService(id: number): Promise<Trip | null> {
+  const { data, error } = await supabase
+    .from("trips")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    // pokud row není nalezena, supabase vrátí error — vrátí null, caller se rozhodne
+    return null;
+  }
+  return data as Trip;
+}

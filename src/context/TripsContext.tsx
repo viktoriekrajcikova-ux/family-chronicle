@@ -8,12 +8,16 @@ type TripsContextType = {
   addTrip: (tripData: Omit<Trip, "id">) => Promise<Trip | null>;
   updateTrip: (id: number, tripData: Partial<Trip>) => Promise<Trip | null>;
   deleteTrip: (id: number) => Promise<boolean>;
+  fetchTrips: () => Promise<void>;
+  getTripById: (id: number) => Trip | undefined;
 };
 
 const TripsContext = createContext<TripsContextType | undefined>(undefined);
 
 export const TripsProvider = ({ children }: { children: React.ReactNode }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTrips = async () => {
@@ -23,13 +27,14 @@ export const TripsProvider = ({ children }: { children: React.ReactNode }) => {
     loadTrips();
   }, []);
 
-  const addTrip = async (tripData: Omit<Trip, "id">) => {
-    const newTrip = await tripsService.addTrip(tripData);
-    if (newTrip) {
-      setTrips(prev => [...prev, newTrip]);
-    }
-    return newTrip;
-  };
+const addTrip = async (tripData: Omit<Trip, "id">): Promise<Trip | null> => {
+  const newTrip = await tripsService.addTrip(tripData);
+  if (newTrip) {
+    setTrips(prev => [newTrip, ...prev]);
+  }
+  return newTrip;
+};
+
 
   const updateTrip = async (id: number, tripData: Partial<Trip>) => {
     const updated = await tripsService.updateTrip(id, tripData);
@@ -47,8 +52,22 @@ export const TripsProvider = ({ children }: { children: React.ReactNode }) => {
     return success;
   };
 
+  const fetchTrips = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchTrips();
+      setTrips(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const getTripById = (id: number) => trips.find(t => Number(t.id) === Number(id));
+
   return (
-    <TripsContext.Provider value={{ trips, addTrip, updateTrip, deleteTrip }}>
+    <TripsContext.Provider value={{ trips, addTrip, updateTrip, deleteTrip, fetchTrips, getTripById }}>
       {children}
     </TripsContext.Provider>
   );

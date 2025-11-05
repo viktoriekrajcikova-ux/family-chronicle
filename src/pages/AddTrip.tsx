@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTrips } from "../context/TripsContext";
+import { useAddTrip } from "../hooks/useAddTrip";
 
 export default function AddTrip() {
   const [title, setTitle] = useState("");
@@ -8,15 +8,13 @@ export default function AddTrip() {
   const [date, setDate] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const navigate = useNavigate();
-  const { addTrip } = useTrips();
+  const { addTrip, error } = useAddTrip();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const newTrip = await addTrip({ title, description, date, imageUrl });
-
     if (newTrip) {
-      navigate(`/trips/${newTrip.id}`);
+      navigate(`/trips/${newTrip.id}`, { state: { trip: newTrip } });
     } else {
       console.error("Trip se nepodařilo přidat");
     }

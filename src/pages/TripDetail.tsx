@@ -1,23 +1,33 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+// src/pages/TripDetail.tsx
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useMemo } from "react";
 import { useTrips } from "../context/TripsContext";
 import TripCard from "../components/TripCard";
+import type { Trip } from "../data/trips";
 
 export default function TripDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { trips, deleteTrip } = useTrips();
+  const location = useLocation();
 
-  
   const numericId = Number(id);
-  const trip = trips.find(t => t.id === numericId);
+  const stateTrip = (location.state as { trip?: Trip } | null)?.trip;
 
-  if (!trip) return <h1>Výlet nenalezen</h1>;
+ 
+  const trip = useMemo(() => {
+    if (stateTrip) return stateTrip;
+    return trips.find((t) => Number(t.id) === numericId);
+  }, [stateTrip, trips, numericId]);
+
+  if (!Number.isFinite(numericId)) return <h1>Neplatné ID</h1>;
+  if (!trip) return <h1>Načítám…</h1>;
 
   const handleDelete = async () => {
     await deleteTrip(trip.id);
-    navigate("/");
+    navigate("/trips");
   };
-
+  
   return (
     <>
       <TripCard trip={trip} />

@@ -57,6 +57,9 @@ export default function Login() {
       <p>
         Nemáš účet? <Link to="/register">Zaregistruj se</Link>
       </p>
+       <p>
+        Zapomněl si heslo? <Link to="/resetPassword">Změnit heslo</Link>
+      </p>
     </div>
   );
 }

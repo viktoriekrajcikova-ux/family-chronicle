@@ -13,6 +13,9 @@ export default function Home() {
         <Link to="/add">
           <button>Přidat nový výlet</button>
         </Link>
+        <Link to="/change-password" style={{ marginLeft: "10px" }}>
+          <button>Změnit heslo</button>
+        </Link>
       </div>
     </div>
   );

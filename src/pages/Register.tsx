@@ -85,6 +85,9 @@ export default function Register() {
       <p>
         Už máš účet? <Link to="/login">Přihlas se</Link>
       </p>
+      <p>
+        Zapomněl si heslo? <Link to="/resetPassword">Změnit heslo</Link>
+      </p>
     </div>
   );
 }

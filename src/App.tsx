@@ -10,6 +10,9 @@ import TripsList from "./pages/TripsList";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import ChangePassword from "./pages/ChangePassword";
+import RequestReset from "./pages/RequestReset";
+import ResetConfirm from "./pages/ResetConfirm";
 
 export default function App() {
   const { user, signOut } = useAuth();
@@ -64,6 +67,9 @@ export default function App() {
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/resetPassword" element={<RequestReset />} />
+        <Route path="/auth/reset-confirm" element={<ResetConfirm />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="*" element={<h1>Not Found</h1>} />
       </Routes>
     </div>

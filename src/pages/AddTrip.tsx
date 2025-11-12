@@ -11,9 +11,28 @@ export default function AddTrip() {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewUrl(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setPreviewUrl(null);
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -74,9 +93,30 @@ export default function AddTrip() {
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+            onChange={(handleFileChange)}
           />
         </label>
+
+        
+        {previewUrl && (
+          <div style={{ marginTop: "10px" }}>
+            <p>Náhled obrázku:</p>
+            <img
+              src={previewUrl}
+              alt="Náhled"
+              style={{
+                width: "300px",
+                borderRadius: "8px",
+                marginBottom: "8px",
+                objectFit: "cover",
+              }}
+            />
+            <br />
+            <button type="button" onClick={handleRemoveImage}>
+              Odebrat obrázek
+            </button>
+          </div>
+        )}
 
         <button type="submit" disabled={loading}>
           {loading ? "Ukládám..." : "Uložit výlet"}

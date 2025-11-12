@@ -1,64 +1,88 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAddTrip } from "../hooks/useAddTrip";
+import { useTrips } from "../context/TripsContext";
+import { uploadTripImage } from "../data/tripService";
 
 export default function AddTrip() {
+  const { addTrip } = useTrips();
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const navigate = useNavigate();
-  const { addTrip, error } = useAddTrip();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newTrip = await addTrip({ title, description, date, imageUrl });
-    if (newTrip) {
-      navigate(`/trips/${newTrip.id}`, { state: { trip: newTrip } });
-    } else {
-      console.error("Trip se nepodařilo přidat");
+    setLoading(true);
+    setError(null);
+
+    try {
+      let imageUrl = "";
+      if (imageFile) {
+        const uploadedUrl = await uploadTripImage(imageFile);
+        if (uploadedUrl) imageUrl = uploadedUrl;
+      }
+
+      const newTrip = await addTrip({ title, description, date, imageUrl });
+      navigate(`/trips/${newTrip.id}`);
+    } catch (err: any) {
+      setError("Chyba při přidávání výletu: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
-
 
   return (
     <div>
       <h1>Přidat nový výlet</h1>
+
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Název: </label>
+        <label>
+          Název:
           <input
             type="text"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             required
           />
-        </div>
-        <div>
-          <label>Popis: </label>
+        </label>
+
+        <label>
+          Popis:
           <textarea
             value={description}
-            onChange={e => setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
+            required
           />
-        </div>
-        <div>
-          <label>Datum: </label>
+        </label>
+
+        <label>
+          Datum:
           <input
             type="date"
             value={date}
-            onChange={e => setDate(e.target.value)}
+            onChange={(e) => setDate(e.target.value)}
             required
           />
-        </div>
-        <div>
-          <label>Obrázek: </label>
+        </label>
+
+        <label>
+          Obrázek:
           <input
-            type="text"
-            value={imageUrl}
-            onChange={e => setImageUrl(e.target.value)}
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
           />
-        </div>
-        <button type="submit">Uložit výlet</button>
+        </label>
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Ukládám..." : "Uložit výlet"}
+        </button>
+
+        {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
     </div>
   );

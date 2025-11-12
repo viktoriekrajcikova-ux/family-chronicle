@@ -10,9 +10,9 @@ export default function TripCard( {trip, withLink = false}: Props) {
     return (
     <>
         <div className="trip-card">
-            {trip.imageUrl ? (
-                <img src={trip.imageUrl} alt={trip.title} width="200"/>
-            ) : null}
+            {trip.imageUrl && (
+                <img src={trip.imageUrl} alt={trip.title} style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }}/>
+            )}
         <h2>
             {withLink ? (
                 <Link to={`/trips/${trip.id}`}>{trip.title}</Link>

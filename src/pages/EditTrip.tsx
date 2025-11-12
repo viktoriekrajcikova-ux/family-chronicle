@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTrips } from "../context/TripsContext";
+import { uploadTripImage, deleteTripImage } from "../data/tripService";
 
 export default function EditTrip() {
     const { id } = useParams<{ id: string }>();
@@ -8,78 +9,133 @@ export default function EditTrip() {
     const navigate = useNavigate();
     const { trips, updateTrip } = useTrips();
     const [loading, setLoading] = useState(false);
-
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [date, setDate] = useState("");
     const [imageUrl, setImageUrl] = useState("");
+    const [newImageFile, setNewImageFile] = useState<File | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-      useEffect(() => {
-        if (!id) return;
+    const numericId = Number(id);
+    const trip = trips.find((t) => t.id === numericId);
 
-        const numericId = Number(id);
-        const found = trips.find(t => t.id === numericId);
+       useEffect(() => {
+    if (trip) {
+      setTitle(trip.title);
+      setDescription(trip.description);
+      setDate(trip.date);
+      setImageUrl(trip.imageUrl ?? null);
+    }
+  }, [trip]);
 
-        if (!found) {
-        setLoading(true)
-        console.error("Trip not found:", id);
-        navigate("/");
-        return;
-        }
+  if (!trip) return <p>Načítám výlet...</p>;
 
-        setTitle(found.title);
-        setDescription(found.description);
-        setDate(found.date);
-        setImageUrl(found.imageUrl ?? "");
-  }, [id, trips, navigate]);
+  const handleRemoveImage = async () => {
+    if (!imageUrl) return;
+    if (!confirm("Opravdu chceš odstranit tento obrázek?")) return;
 
+    await deleteTripImage(imageUrl);
+    setImageUrl(null);
+  };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!id) return;
+    try {
+      let finalImageUrl = imageUrl;
 
-        const numericId = Number(id);
-        await updateTrip(numericId, { title, description, date, imageUrl });
-
-        navigate(`/trips/${numericId}`);
-    };
-
-    if (loading) return <p>Loading...</p>;
-
-    return (
-        <>
-        <h1>Editace</h1>
+      
+      if (newImageFile) {
         
-        <form onSubmit={handleSubmit}>
-            <h2>Upravit výlet</h2>
-            <input
-                type="text"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                placeholder="Název"
-                required
+        if (imageUrl) await deleteTripImage(imageUrl);
+
+        const uploadedUrl = await uploadTripImage(newImageFile);
+        if (uploadedUrl) finalImageUrl = uploadedUrl;
+      }
+
+      await updateTrip(trip.id, {
+        title,
+        description,
+        date,
+        imageUrl: finalImageUrl || "",
+      });
+
+      navigate(`/trips/${trip.id}`);
+    } catch (err: any) {
+      setError("Chyba při ukládání změn: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <h1>Upravit výlet</h1>
+
+      <form onSubmit={handleSubmit}>
+        <label>
+          Název:
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </label>
+
+        <label>
+          Popis:
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
+        </label>
+
+        <label>
+          Datum:
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
+        </label>
+
+        {imageUrl ? (
+          <div>
+            <p>Aktuální obrázek:</p>
+            <img
+              src={imageUrl}
+              alt="Aktuální"
+              style={{ width: "300px", borderRadius: "8px", marginBottom: "10px" }}
             />
-            <textarea
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="Popis"
-                required
-            />
-            <input
-                type="date"
-                value={date}
-                onChange={e => setDate(e.target.value)}
-                required
-            />
-            <input
-                type="text"
-                value={imageUrl}
-                onChange={e => setImageUrl(e.target.value)}
-                placeholder="URL obrázku"
-            />
-            <button type="submit">Uložit změny</button>
-        </form>
-        </>
-    )
+            <br />
+            <button type="button" onClick={handleRemoveImage}>
+              Odebrat obrázek
+            </button>
+          </div>
+        ) : (
+          <p>Žádný obrázek není nahrán.</p>
+        )}
+
+        <label>
+          Nahrát nový obrázek:
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setNewImageFile(e.target.files?.[0] || null)}
+          />
+        </label>
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Ukládám..." : "Uložit změny"}
+        </button>
+
+        {error && <p style={{ color: "red" }}>{error}</p>}
+      </form>
+    </div>
+  );
 }

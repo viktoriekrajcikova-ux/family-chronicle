@@ -1,5 +1,4 @@
 import { Routes, Route, Link } from "react-router-dom";
-import { useAuth } from "./context/AuthContext";
 
 import Home from "./pages/Home";
 import TripDetail from "./pages/TripDetail";
@@ -13,27 +12,15 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import ChangePassword from "./pages/ChangePassword";
 import RequestReset from "./pages/RequestReset";
 import ResetConfirm from "./pages/ResetConfirm";
+import Navbar from "./components/Navbar";
+import About from "./pages/About";
 
 export default function App() {
-  const { user, signOut } = useAuth();
 
   return (
     <div>
-      <nav style={{ display: "flex", gap: 12 }}>
-        <Link to="/">Home</Link>
-        <Link to="/trips">Trips</Link>
-        {user ? (
-          <>
-            <Link to="/add">Add Trip</Link>
-            <button onClick={signOut}>Logout ({user.email})</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
-          </>
-        )}
-      </nav>
+      <Navbar />
+
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -64,7 +51,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/resetPassword" element={<RequestReset />} />

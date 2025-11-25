@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTrips } from "../context/TripsContext";
-import { uploadTripImage } from "../data/tripService";
+import { uploadTripImage } from "../services/tripsService";
 
 export default function AddTrip() {
   const { addTrip } = useTrips();

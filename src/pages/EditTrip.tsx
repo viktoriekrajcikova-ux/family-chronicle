@@ -1,25 +1,34 @@
+import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTrips } from "../context/TripsContext";
-import { uploadTripImage, deleteTripImage } from "../data/tripService";
+import { uploadTripImage, deleteTripImage } from "../services/tripsService";
+import type { Trip } from "../data/trips";
+import Spinner from "../components/Spinner"; 
 
 export default function EditTrip() {
-    const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { trips, updateTrip } = useTrips();
 
-    const navigate = useNavigate();
-    const { trips, updateTrip } = useTrips();
-    const [loading, setLoading] = useState(false);
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [date, setDate] = useState("");
-    const [imageUrl, setImageUrl] = useState("");
-    const [newImageFile, setNewImageFile] = useState<File | null>(null);
-    const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [date, setDate] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-    const numericId = Number(id);
-    const trip = trips.find((t) => t.id === numericId);
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-       useEffect(() => {
+  const numericId = Number(id);
+  const trip = trips.find((t) => t.id === numericId);
+
+  const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+  const ALLOWED_MIME_PREFIX = "image/";
+
+  useEffect(() => {
     if (trip) {
       setTitle(trip.title);
       setDescription(trip.description);
@@ -28,31 +37,81 @@ export default function EditTrip() {
     }
   }, [trip]);
 
+  useEffect(() => {
+    if (!newImageFile) {
+      setNewImagePreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(newImageFile);
+    setNewImagePreview(url);
+    return () => {
+      URL.revokeObjectURL(url);
+      setNewImagePreview(null);
+    };
+  }, [newImageFile]);
+
   if (!trip) return <p>Načítám výlet...</p>;
 
-  const handleRemoveImage = async () => {
+  const validateFile = (file: File | null): boolean => {
+    if (!file) {
+      setFileError(null);
+      return true;
+    }
+    if (!file.type || !file.type.startsWith(ALLOWED_MIME_PREFIX)) {
+      setFileError("Neplatný soubor — povoleny jsou pouze obrázky.");
+      return false;
+    }
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setFileError(`Soubor je příliš velký (max ${Math.round(MAX_FILE_SIZE_BYTES / 1024 / 1024)} MB).`);
+      return false;
+    }
+    setFileError(null);
+    return true;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    if (!validateFile(file)) {
+      setNewImageFile(null);
+      return;
+    }
+    setNewImageFile(file);
+  };
+
+  const handleRemoveImage = async (): Promise<void> => {
     if (!imageUrl) return;
     if (!confirm("Opravdu chceš odstranit tento obrázek?")) return;
 
-    await deleteTripImage(imageUrl);
-    setImageUrl(null);
+    try {
+      setLoading(true);
+      await deleteTripImage(imageUrl);
+      await updateTrip(trip.id, { imageUrl: "" });
+      setImageUrl(null);
+    } catch (err: any) {
+      setError("Nepodařilo se odstranit obrázek: " + (err.message ?? err));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
+    if (!validateFile(newImageFile)) {
+      setError("Soubor není platný — oprav ho a zkus to znovu.");
+      return;
+    }
+
     try {
+      setLoading(true);
       let finalImageUrl = imageUrl;
 
-      
       if (newImageFile) {
-        
         if (imageUrl) await deleteTripImage(imageUrl);
-
         const uploadedUrl = await uploadTripImage(newImageFile);
-        if (uploadedUrl) finalImageUrl = uploadedUrl;
+        if (!uploadedUrl) throw new Error("Upload obrázku selhal.");
+        finalImageUrl = uploadedUrl;
       }
 
       await updateTrip(trip.id, {
@@ -64,77 +123,36 @@ export default function EditTrip() {
 
       navigate(`/trips/${trip.id}`);
     } catch (err: any) {
-      setError("Chyba při ukládání změn: " + err.message);
+      setError("Chyba při ukládání změn: " + (err.message ?? err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
-      <h1>Upravit výlet</h1>
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-4">Upravit výlet</h1>
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          Název:
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </label>
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">
+          {error}
+        </div>
+      )}
 
-        <label>
-          Popis:
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
-        </label>
+      <form onSubmit={handleSubmit} className={`${loading ? "opacity-60 pointer-events-none" : ""} space-y-4`}>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Název</label>
+          <input value={title} onChange={e => setTitle(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300" />
+        </div>
 
-        <label>
-          Datum:
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-          />
-        </label>
-
-        {imageUrl ? (
-          <div>
-            <p>Aktuální obrázek:</p>
-            <img
-              src={imageUrl}
-              alt="Aktuální"
-              style={{ width: "300px", borderRadius: "8px", marginBottom: "10px" }}
-            />
-            <br />
-            <button type="button" onClick={handleRemoveImage}>
-              Odebrat obrázek
-            </button>
-          </div>
-        ) : (
-          <p>Žádný obrázek není nahrán.</p>
-        )}
-
-        <label>
-          Nahrát nový obrázek:
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setNewImageFile(e.target.files?.[0] || null)}
-          />
-        </label>
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Ukládám..." : "Uložit změny"}
-        </button>
-
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        <div className="flex items-center gap-3">
+          <button type="submit" disabled={loading || !!fileError} className="inline-flex items-center gap-2 px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-70">
+            {loading ? <Spinner size={18} /> : null}
+            <span>{loading ? "Ukládám..." : "Uložit změny"}</span>
+          </button>
+          <button type="button" onClick={() => navigate(-1)} className="px-3 py-2 rounded border bg-white" disabled={loading}>Zpět</button>
+        </div>
       </form>
     </div>
   );

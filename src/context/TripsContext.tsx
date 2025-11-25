@@ -1,13 +1,13 @@
-import { createContext, useContext, useState, useEffect } from "react";
+// src/context/TripsContext.tsx
+import React, { createContext, useContext, useState, useEffect } from "react";
 import type { Trip } from "../data/trips";
-import * as tripsService from "../services/tripsService"
+import * as tripsService from "../services/tripsService";
 
 type TripsContextType = {
   trips: Trip[];
-
-  addTrip: (tripData: Omit<Trip, "id">) => Promise<Trip | null>;
-  updateTrip: (id: number, tripData: Partial<Trip>) => Promise<Trip | null>;
-  deleteTrip: (id: number) => Promise<boolean>;
+  addTrip: (tripData: Omit<Trip, "id" | "created_at">) => Promise<Trip | null>;
+  updateTrip: (id: number, tripData: Partial<Omit<Trip, "id" | "created_at">>) => Promise<Trip | null>;
+  deleteTrip: (id: number, imageUrl?: string | null) => Promise<void>;
   fetchTrips: () => Promise<void>;
   getTripById: (id: number) => Trip | undefined;
 };
@@ -21,48 +21,47 @@ export const TripsProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const loadTrips = async () => {
-      const data = await tripsService.fetchTrips();
-      setTrips(data);
+      try {
+        const data = await tripsService.fetchTrips();
+        setTrips(data);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message ?? String(err));
+      } finally {
+        setLoading(false);
+      }
     };
     loadTrips();
   }, []);
 
-const addTrip = async (tripData: Omit<Trip, "id">): Promise<Trip | null> => {
-  const newTrip = await tripsService.addTrip(tripData);
-  if (newTrip) {
-    setTrips(prev => [newTrip, ...prev]);
-  }
-  return newTrip;
-};
+  const addTrip = async (tripData: Omit<Trip, "id" | "created_at">): Promise<Trip | null> => {
+    const newTrip = await tripsService.addTrip(tripData);
+    if (newTrip) setTrips(prev => [newTrip, ...prev]);
+    return newTrip;
+  };
 
-
-  const updateTrip = async (id: number, tripData: Partial<Trip>) => {
+  const updateTrip = async (id: number, tripData: Partial<Omit<Trip, "id" | "created_at">>) => {
     const updated = await tripsService.updateTrip(id, tripData);
-    if (updated) {
-      setTrips(prev => prev.map(t => (t.id === id ? updated : t)));
-    }
+    if (updated) setTrips(prev => prev.map(t => (t.id === id ? updated : t)));
     return updated;
   };
 
-  const deleteTrip = async (id: number) => {
-    const success = await tripsService.deleteTrip(id);
-    if (success) {
-      setTrips(prev => prev.filter(t => t.id !== id));
-    }
-    return success;
+  const deleteTrip = async (id: number, imageUrl?: string | null) => {
+    await tripsService.deleteTrip(id, imageUrl);
+    setTrips(prev => prev.filter(t => t.id !== id));
   };
 
   const fetchTrips = async () => {
     try {
       setLoading(true);
-      const data = await fetchTrips();
+      const data = await tripsService.fetchTrips();
       setTrips(data);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message ?? String(err));
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const getTripById = (id: number) => trips.find(t => Number(t.id) === Number(id));
 

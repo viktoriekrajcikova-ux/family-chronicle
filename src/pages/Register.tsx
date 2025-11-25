@@ -1,93 +1,128 @@
+// src/pages/Register.tsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Spinner from "../components/Spinner";
 
 export default function Register() {
-  const { signUp, loading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [password2, setPassword2] = useState("");
+  const { signUp, loading: authLoading } = useAuth(); // očekáváme signUp(email,password): Promise<void>
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [password2, setPassword2] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
-  const navigate = useNavigate();
+
+  const isLoading = authLoading ?? false;
+  const MIN_PWD = 6;
+
+  const emailLooksValid = (v: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setInfo(null);
 
-    if (password !== password2) {
-      setError("Hesla se neshodují");
+    if (!emailLooksValid(email)) {
+      setError("Zadej platný e-mail.");
       return;
     }
-    if (password.length < 6) {
-      setError("Heslo musí mít alespoň 6 znaků");
+    if (password !== password2) {
+      setError("Hesla se neshodují.");
+      return;
+    }
+    if (password.length < MIN_PWD) {
+      setError(`Heslo musí mít alespoň ${MIN_PWD} znaků.`);
       return;
     }
 
     try {
-      await signUp(email, password);
-      // Supabase může vyžadovat potvrzení e-mailu – zobrazíme info
-      setInfo("Registrace proběhla. Zkontroluj e-mail pro potvrzení.");
-      // Volitelně: po chvilce na login
-      setTimeout(() => navigate("/login"), 1500);
+      setError(null);
+      setInfo(null);
+      // Volání signUp - uprav podle své implementace, např. signUp({email, password})
+      await signUp(email.trim(), password);
+      setInfo("Registrace proběhla. Zkontroluj e-mail pro potvrzení (pokud je potřeba).");
+      // přesměruj na login po chviličce
+      setTimeout(() => navigate("/login"), 1400);
     } catch (err: any) {
-      setError(err?.message ?? "Registrace se nepodařila");
+      console.error("register error", err);
+      setError(err?.message ?? "Registrace se nepodařila.");
     }
   };
 
   return (
-    <div>
-      <h1>Registrace</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="max-w-md mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-4">Registrace</h1>
+
+      {info && (
+        <div className="mb-4 p-3 rounded bg-green-50 border border-green-100 text-green-700">
+          {info}
+        </div>
+      )}
+
+      {error && (
+        <div className="mb-4 p-3 rounded bg-red-50 border border-red-100 text-red-700">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className={`${isLoading ? "opacity-60 pointer-events-none" : ""} space-y-4`}>
         <div>
-          <label>E-mail</label>
+          <label className="block text-sm font-medium text-gray-700">E-mail</label>
           <input
             type="email"
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
             placeholder="you@example.com"
+            required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300 p-2"
           />
         </div>
+
         <div>
-          <label>Heslo</label>
+          <label className="block text-sm font-medium text-gray-700">Heslo</label>
           <input
             type="password"
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder={`Minimálně ${MIN_PWD} znaků`}
             required
-            placeholder="min. 6 znaků"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300 p-2"
           />
         </div>
+
         <div>
-          <label>Heslo znovu</label>
+          <label className="block text-sm font-medium text-gray-700">Heslo znovu</label>
           <input
             type="password"
             autoComplete="new-password"
             value={password2}
             onChange={(e) => setPassword2(e.target.value)}
+            placeholder="Zadej heslo znovu"
             required
-            placeholder="zadej znovu heslo"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300 p-2"
           />
         </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Zakládám účet…" : "Zaregistrovat se"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70"
+          >
+            {isLoading && <Spinner size={16} />}
+            <span>{isLoading ? "Zakládám účet…" : "Zaregistrovat se"}</span>
+          </button>
+
+          <Link to="/login" className="ml-auto text-sm px-3 py-2 rounded border bg-white hover:bg-gray-50">
+            Už máš účet? Přihlásit se
+          </Link>
+        </div>
       </form>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {info && <p style={{ color: "green" }}>{info}</p>}
-
-      <p>
-        Už máš účet? <Link to="/login">Přihlas se</Link>
-      </p>
-      <p>
-        Zapomněl si heslo? <Link to="/resetPassword">Změnit heslo</Link>
-      </p>
     </div>
   );
 }

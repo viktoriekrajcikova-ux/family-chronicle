@@ -2,22 +2,24 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useTrips } from "../context/TripsContext";
 import TripCard from "../components/TripCard";
+import Container from "../components/Container";
+import Card from "../components/Card";
+import Button from "../components/Button";
 import Spinner from "../components/Spinner";
+import useToast from "../components/toast/useToast";
 import type { Trip } from "../data/trips";
-import { Button } from "../components";
 
 export default function TripDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { trips, deleteTrip } = useTrips();
   const location = useLocation();
+  const toast = useToast();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const numericId = Number(id);
-
-  
   const stateTrip = (location.state as { trip?: Trip } | null)?.trip ?? null;
 
   const trip = useMemo<Trip | undefined>(() => {
@@ -27,18 +29,23 @@ export default function TripDetail() {
 
   if (!Number.isFinite(numericId)) {
     return (
-      <div className="max-w-3xl mx-auto p-6">
-        <h1 className="text-xl font-semibold text-red-600">Neplatné ID</h1>
-        <Link to="/trips" className="text-indigo-600 hover:underline">Zpět na seznam</Link>
-      </div>
+      <Container className="py-10">
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-xl font-semibold text-red-600 mb-4">Neplatné ID</h1>
+          <Link to="/trips" className="text-indigo-600 hover:underline">Zpět na seznam</Link>
+        </div>
+      </Container>
     );
   }
 
   if (!trip) {
     return (
-      <div className="max-w-3xl mx-auto p-6">
-        <p className="text-gray-600">Načítám…</p>
-      </div>
+      <Container className="py-10">
+        <div className="max-w-2xl mx-auto text-center text-gray-600">
+          <Spinner size="md" />
+          <p className="mt-3">Načítám…</p>
+        </div>
+      </Container>
     );
   }
 
@@ -49,61 +56,70 @@ export default function TripDetail() {
     setError(null);
     try {
       setLoading(true);
-      // deleteTrip má signaturu (id: number, imageUrl?: string | null)
       await deleteTrip(trip.id, trip.imageUrl ?? null);
-      // po úspěšném smazání přesměruj na seznam
+      toast.push("Výlet smazán.", { type: "success" });
       navigate("/trips");
     } catch (err: any) {
       console.error("Chyba při mazání výletu:", err);
-      setError(err?.message ?? "Nepodařilo se smazat výlet.");
+      const msg = err?.message ?? "Nepodařilo se smazat výlet.";
+      setError(msg);
+      toast.push(msg, { type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      {/* TripCard zobrazuje hlavní info (image, title, date...) */}
-      <TripCard trip={trip} />
+    <Container className="py-10">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Hlavní karta s obrázkem a titulkem */}
+        <Card padded hover>
+          <TripCard trip={trip} withLink={false} />
+        </Card>
 
-      <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-semibold">Detail výletu</h2>
+        {/* Detail info */}
+        <Card padded>
+          <div className="space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">{trip.title}</h2>
+                <p className="text-sm text-gray-500 mt-1">{trip.date}</p>
+              </div>
 
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-            {error}
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => navigate(`/edit/${trip.id}`, { state: { trip } })}
+                  disabled={loading}
+                >
+                  Upravit
+                </Button>
+
+                <Button onClick={handleDelete} variant="danger" disabled={loading}>
+                  {loading ? <Spinner size="sm" /> : null}
+                  <span>{loading ? "Mažu..." : "Smazat"}</span>
+                </Button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Popis</h3>
+              <p className="whitespace-pre-wrap text-gray-700">{trip.description}</p>
+            </div>
           </div>
-        )}
 
-        <div className="space-y-2">
-          <p className="text-sm text-gray-600"><strong>Název:</strong> {trip.title}</p>
-          <p className="text-sm text-gray-600"><strong>Datum:</strong> {trip.date}</p>
-          <p className="text-sm text-gray-600"><strong>Popis:</strong></p>
-          <p className="whitespace-pre-wrap">{trip.description}</p>
-        </div>
-
-        <div className="flex items-center gap-3 mt-4">
-          <Button 
-            onClick={() => navigate(`/edit/${trip.id}`, { state: { trip } })}
-            disabled={loading}>
-              Upravit
-          </Button>
-          <Button
-            onClick={handleDelete}
-            disabled={loading}
-            >
-            {loading ? <Spinner size={16} /> : null}
-            <span>{loading ? "Mažu..." : "Smazat"}</span>
-          </Button>
-
-          <Link
-            to="/trips"
-            className="ml-auto text-sm text-indigo-600 hover:underline"
-          >
-            Zpět na seznam
-          </Link>
-        </div>
+          <div className="mt-6">
+            <Link to="/trips" className="text-sm text-indigo-600 hover:underline">
+              ← Zpět na seznam
+            </Link>
+          </div>
+        </Card>
       </div>
-    </div>
+    </Container>
   );
 }

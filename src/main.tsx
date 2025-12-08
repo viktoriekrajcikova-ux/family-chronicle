@@ -5,6 +5,7 @@ import App from './App.tsx'
 import { TripsProvider } from './context/TripsContext.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
 import './index.css';
+import { ToastProvider } from './components/index.ts'
 
 
 createRoot(document.getElementById('root')!).render(
@@ -12,7 +13,9 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <AuthProvider>
         <TripsProvider>
-          <App />
+          <ToastProvider>
+            <App />
+          </ToastProvider>
         </TripsProvider>
       </AuthProvider>
     </BrowserRouter>

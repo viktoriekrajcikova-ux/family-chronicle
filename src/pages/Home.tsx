@@ -1,43 +1,44 @@
 import { Link } from "react-router-dom";
+import Container from "../components/Container";
+import Button from "../components/Button";
 
 export default function Home() {
   return (
-    <div className="max-w-3xl mx-auto p-6 text-center space-y-6">
-      <h1 className="text-4xl font-bold">
-        Vítej v rodinné kronice
-      </h1>
+    <Container className="py-12 text-center">
+      <div className="max-w-3xl mx-auto space-y-8">
 
-      <p className="text-gray-600 text-lg leading-relaxed">
-        Tady si ukládáme všechny naše výlety, zážitky a malé okamžiky,
-        které chceme uchovat.  
-      </p>
+        <h1 className="text-4xl font-bold text-gray-900">
+          Vítej v rodinné kronice
+        </h1>
 
-      <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
-        <Link
-          to="/trips"
-          className="px-5 py-3 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition text-sm font-medium"
-        >
-          Seznam výletů
-        </Link>
+        <p className="text-gray-600 text-lg leading-relaxed max-w-prose mx-auto">
+          Tady si ukládáme všechny naše výlety, zážitky a malé okamžiky,  
+          které chceme uchovat. Budujeme místo plné vzpomínek.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+          <Link to="/trips">
+            <Button variant="primary" className="w-full sm:w-auto">
+              Seznam výletů
+            </Button>
+          </Link>
 
-        <Link
-          to="/add"
-          className="px-5 py-3 rounded bg-green-600 text-white hover:bg-green-700 transition text-sm font-medium"
-        >
-          Přidat nový výlet
-        </Link>
+          <Link to="/add">
+            <Button variant="secondary" className="w-full sm:w-auto">
+              Přidat nový výlet
+            </Button>
+          </Link>
 
-        <Link
-          to="/change-password"
-          className="px-5 py-3 rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition text-sm font-medium"
-        >
-          Změnit heslo
-        </Link>
+          <Link to="/change-password">
+            <Button variant="ghost" className="w-full sm:w-auto">
+              Změnit heslo
+            </Button>
+          </Link>
+        </div>
+
+        <div className="pt-8 border-t text-sm text-gray-500">
+          Zapisujeme naše příběhy. Jeden výlet po druhém.
+        </div>
       </div>
-
-      <div className="mt-8 border-t pt-6 text-sm text-gray-500">
-        Zapisujeme naše příběhy. Jeden výlet po druhém.
-      </div>
-    </div>
+    </Container>
   );
 }

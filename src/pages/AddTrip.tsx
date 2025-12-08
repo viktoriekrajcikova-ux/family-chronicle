@@ -2,11 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTrips } from "../context/TripsContext";
 import { uploadTripImage } from "../services/tripsService";
-import { Button, Input } from "../components";
+import Container from "../components/Container";
+import Card from "../components/Card";
+import { FormField } from "../components/FormField";
+import Input from "../components/Input";
+import Button from "../components/Button";
+import Spinner from "../components/Spinner";
+import useToast from "../components/toast/useToast";
 
 export default function AddTrip() {
   const { addTrip } = useTrips();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -17,12 +24,12 @@ export default function AddTrip() {
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
+    const file = e.target.files?.[0] ?? null;
     setImageFile(file);
 
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setPreviewUrl(reader.result as string);
+      reader.onloadend = () => setPreviewUrl(String(reader.result ?? null));
       reader.readAsDataURL(file);
     } else {
       setPreviewUrl(null);
@@ -33,12 +40,17 @@ export default function AddTrip() {
     setImageFile(null);
     setPreviewUrl(null);
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
 
+    if (!title.trim() || !description.trim() || !date.trim()) {
+      setError("Vyplň prosím názov, popis a datum.");
+      return;
+    }
+
+    setLoading(true);
     try {
       let imageUrl = "";
       if (imageFile) {
@@ -47,83 +59,104 @@ export default function AddTrip() {
       }
 
       const newTrip = await addTrip({ title, description, date, imageUrl });
+      if (!newTrip) throw new Error("Nepodařilo se vytvořit výlet.");
+
+      toast.push("Výlet úspěšně přidán", { type: "success" });
       navigate(`/trips/${newTrip.id}`);
     } catch (err: any) {
-      setError("Chyba při přidávání výletu: " + err.message);
+      console.error("AddTrip error:", err);
+      setError(err?.message ?? "Chyba při přidávání výletu.");
+      toast.push(err?.message ?? "Chyba při přidávání výletu.", { type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
-      <h1>Přidat nový výlet</h1>
+    <Container className="py-10">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-semibold mb-4">Přidat nový výlet</h1>
 
-      <form onSubmit={handleSubmit}>
-        <label>
-          Název:
-          <Input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </label>
+        <Card>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <FormField label="Název" required>
+              <Input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Např. Víkend v horách"
+                required
+              />
+            </FormField>
 
-        <label>
-          Popis:
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
-        </label>
+            <FormField label="Popis" hint="Krátký popis výletu" required>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                rows={4}
+                className="mt-1 block w-full rounded-md border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-300 focus:ring-2"
+                placeholder="Pár vět o výletu..."
+              />
+            </FormField>
 
-        <label>
-          Datum:
-          <Input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-          />
-        </label>
+            <FormField label="Datum" required>
+              <Input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+              />
+            </FormField>
 
-        <label>
-          Obrázek:
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(handleFileChange)}
-          />
-        </label>
+            <FormField label="Obrázek (volitelně)">
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </FormField>
 
-        
-        {previewUrl && (
-          <div style={{ marginTop: "10px" }}>
-            <p>Náhled obrázku:</p>
-            <img
-              src={previewUrl}
-              alt="Náhled"
-              style={{
-                width: "300px",
-                borderRadius: "8px",
-                marginBottom: "8px",
-                objectFit: "cover",
-              }}
-            />
-            <br />
-            <Button variant="primary" onClick={handleRemoveImage}>
-              Odebrat obrázek
-            </Button>
-          </div>
-        )}
+            {previewUrl && (
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-gray-700">Náhled obrázku</div>
 
-        <Button variant="primary" type="submit" loading={loading}>
-          {loading ? "Ukládám..." : "Uložit výlet"}
-        </Button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
-    </div>
+                <div className="w-full max-w-md rounded-lg overflow-hidden border border-gray-100">
+                  <img
+                    src={previewUrl}
+                    alt="Náhled obrázku"
+                    className="w-full h-48 object-cover object-center"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <Button variant="secondary" onClick={handleRemoveImage}>
+                    Odebrat obrázek
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              <Button variant="primary" type="submit" loading={loading}>
+                {loading ? <><Spinner size="sm" /> Ukládám...</> : "Uložit výlet"}
+              </Button>
+
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => {
+                  navigate(-1);
+                }}
+              >
+                Zpět
+              </Button>
+
+              {error && <p className="text-sm text-red-600 ml-auto">{error}</p>}
+            </div>
+          </form>
+        </Card>
+      </div>
+    </Container>
   );
 }

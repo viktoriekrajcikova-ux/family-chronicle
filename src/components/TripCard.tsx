@@ -7,51 +7,63 @@ type Props = {
 };
 
 export default function TripCard({ trip, withLink = false }: Props) {
-  const CardInner = (
-    <article className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      {/* Responsive image box: keep aspect ratio and scale height by breakpoint */}
-      <div
+  const Wrapper = withLink ? Link : "div";
+
+  return (
+    <Wrapper
+      to={withLink ? `/trips/${trip.id}` : undefined}
+      className="block"
+    >
+      <article
         className="
-          w-full
-          bg-gray-100
-          overflow-hidden
-          /* mobile: 3:2-ish, sm+: 16:9-ish */
-          aspect-[3/2] sm:aspect-video
+          bg-white border border-gray-200 rounded-xl overflow-hidden 
+          shadow-sm hover:shadow-md hover:-translate-y-[1px]
+          transition-all duration-200
         "
-        aria-hidden={!trip.imageUrl}
       >
-        {trip.imageUrl ? (
-          <img
-            src={trip.imageUrl}
-            alt={trip.title}
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-cover object-center"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-            Bez obrázku
-          </div>
-        )}
-      </div>
-
-      <div className="p-4 space-y-2">
-        <h3 className="text-lg font-semibold text-gray-900">
-          {withLink ? (
-            <Link to={`/trips/${trip.id}`} className="hover:underline underline-offset-2">
-              {trip.title}
-            </Link>
+        {/* Image */}
+        <div className="w-full aspect-[3/2] sm:aspect-video bg-gray-100">
+          {trip.imageUrl ? (
+            <img
+              src={trip.imageUrl}
+              alt={trip.title || "Fotka z výletu"}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover object-center"
+            />
           ) : (
-            trip.title
+            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+              Bez obrázku
+            </div>
           )}
-        </h3>
+        </div>
 
-        <p className="text-sm text-gray-600 line-clamp-3">{trip.description}</p>
+        {/* Content */}
+        <div className="p-4 space-y-2">
+          <h3
+            className="
+              text-lg font-semibold text-gray-900
+              group-hover:text-indigo-700 transition-colors
+            "
+          >
+            {withLink ? (
+              <span className="underline-offset-2 group-hover:underline">
+                {trip.title}
+              </span>
+            ) : (
+              trip.title
+            )}
+          </h3>
 
-        <small className="text-xs text-gray-500 block">{trip.date}</small>
-      </div>
-    </article>
+          <p className="text-sm text-gray-600 line-clamp-3">
+            {trip.description}
+          </p>
+
+          <small className="text-xs text-gray-500 block">
+            {trip.date}
+          </small>
+        </div>
+      </article>
+    </Wrapper>
   );
-
-  return withLink ? <Link to={`/trips/${trip.id}`} className="block">{CardInner}</Link> : <div className="block">{CardInner}</div>;
 }

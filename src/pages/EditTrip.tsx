@@ -1,15 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { useTrips } from "../context/TripsContext";
 import { uploadTripImage, deleteTripImage } from "../services/tripsService";
-import { Button, Input } from "../components";
-import Spinner from "../components/Spinner"; 
+import Container from "../components/Container";
+import Card from "../components/Card";
+import { FormField } from "../components/FormField";
+import Input from "../components/Input";
+import Button from "../components/Button";
+import Spinner from "../components/Spinner";
+import useToast from "../components/toast/useToast";
+import type { Trip } from "../data/trips";
 
 export default function EditTrip() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { trips, updateTrip } = useTrips();
+  const toast = useToast();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
@@ -23,16 +29,16 @@ export default function EditTrip() {
   const [error, setError] = useState<string | null>(null);
 
   const numericId = Number(id);
-  const trip = trips.find((t) => t.id === numericId);
+  const trip = trips.find((t) => Number(t.id) === numericId) as Trip | undefined;
 
   const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
   const ALLOWED_MIME_PREFIX = "image/";
 
   useEffect(() => {
     if (trip) {
-      setTitle(trip.title);
-      setDescription(trip.description);
-      setDate(trip.date);
+      setTitle(trip.title ?? "");
+      setDescription(trip.description ?? "");
+      setDate(trip.date ?? "");
       setImageUrl(trip.imageUrl ?? null);
     }
   }, [trip]);
@@ -50,7 +56,13 @@ export default function EditTrip() {
     };
   }, [newImageFile]);
 
-  if (!trip) return <p>Načítám výlet...</p>;
+  if (!trip) {
+    return (
+      <Container className="py-10">
+        <div className="max-w-2xl mx-auto text-center text-gray-600">Načítám výlet…</div>
+      </Container>
+    );
+  }
 
   const validateFile = (file: File | null): boolean => {
     if (!file) {
@@ -78,7 +90,7 @@ export default function EditTrip() {
     setNewImageFile(file);
   };
 
-  const handleRemoveImage = async (): Promise<void> => {
+  const handleRemoveImage = async () => {
     if (!imageUrl) return;
     if (!confirm("Opravdu chceš odstranit tento obrázek?")) return;
 
@@ -87,16 +99,24 @@ export default function EditTrip() {
       await deleteTripImage(imageUrl);
       await updateTrip(trip.id, { imageUrl: "" });
       setImageUrl(null);
+      toast.push("Obrázek odstraněn", { type: "success" });
     } catch (err: any) {
-      setError("Nepodařilo se odstranit obrázek: " + (err.message ?? err));
+      console.error("remove image error", err);
+      setError("Nepodařilo se odstranit obrázek: " + (err?.message ?? err));
+      toast.push("Nepodařilo se odstranit obrázek.", { type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!title.trim() || !description.trim() || !date.trim()) {
+      setError("Vyplň prosím název, popis a datum.");
+      return;
+    }
 
     if (!validateFile(newImageFile)) {
       setError("Soubor není platný — oprav ho a zkus to znovu.");
@@ -105,55 +125,125 @@ export default function EditTrip() {
 
     try {
       setLoading(true);
-      let finalImageUrl = imageUrl;
+      let finalImageUrl = imageUrl ?? "";
 
       if (newImageFile) {
-        if (imageUrl) await deleteTripImage(imageUrl);
+        if (imageUrl) {
+          try {
+            await deleteTripImage(imageUrl);
+          } catch (err) {
+            console.warn("Failed to delete old image:", err);
+          }
+        }
+
         const uploadedUrl = await uploadTripImage(newImageFile);
         if (!uploadedUrl) throw new Error("Upload obrázku selhal.");
         finalImageUrl = uploadedUrl;
       }
 
       await updateTrip(trip.id, {
-        title,
-        description,
-        date,
+        title: title.trim(),
+        description: description.trim(),
+        date: date.trim(),
         imageUrl: finalImageUrl || "",
       });
 
+      toast.push("Výlet úspěšně upraven", { type: "success" });
       navigate(`/trips/${trip.id}`);
     } catch (err: any) {
-      setError("Chyba při ukládání změn: " + (err.message ?? err));
+      console.error("EditTrip error:", err);
+      const msg = err?.message ?? "Chyba při ukládání změn.";
+      setError(msg);
+      toast.push(msg, { type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Upravit výlet</h1>
+    <Container className="py-10">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-2xl font-semibold mb-4">Upravit výlet</h1>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">
+            {error}
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit} className={`${loading ? "opacity-60 pointer-events-none" : ""} space-y-4`}>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Název</label>
-          <Input value={title} onChange={e => setTitle(e.target.value)} required />
-        </div>
+        <Card>
+          <form onSubmit={handleSubmit} className={`${loading ? "opacity-60 pointer-events-none" : ""} space-y-6`}>
+            <FormField label="Název" required>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
+            </FormField>
 
-        <div className="flex items-center gap-3">
-          <Button type="submit" disabled={loading || !!fileError}>
-            {loading ? <Spinner size={18} /> : null}
-            <span>{loading ? "Ukládám..." : "Uložit změny"}</span>
-          </Button>
-          <Button type="button" onClick={() => navigate(-1)} disabled={loading}>Zpět</Button>
-        </div>
-      </form>
-    </div>
+            <FormField label="Popis" required>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                required
+                className="mt-1 block w-full rounded-md border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-300 focus:ring-2"
+              />
+            </FormField>
+
+            <FormField label="Datum" required>
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+            </FormField>
+
+            <FormField label="Nahrát nový obrázek">
+              <Input type="file" accept="image/*" onChange={handleFileChange} />
+              {fileError && <div className="mt-1 text-xs text-red-600">{fileError}</div>}
+            </FormField>
+
+            {/* Preview area - show new preview if present, otherwise existing image */}
+            {(newImagePreview || imageUrl) && (
+              <div>
+                <div className="text-sm font-medium text-gray-700 mb-2">Náhled obrázku</div>
+                <div className="w-full max-w-md rounded-lg overflow-hidden border border-gray-100 mb-3">
+                  <img
+                    src={newImagePreview ?? imageUrl ?? undefined}
+                    alt={trip.title || "Náhled obrázku"}
+                    className="w-full h-64 object-cover object-center"
+                  />
+                </div>
+
+                <div className="flex gap-3 items-center">
+                  <Button variant="secondary" type="button" onClick={() => { setNewImageFile(null); setNewImagePreview(null); }}>
+                    Zrušit nový obrázek
+                  </Button>
+
+                  {imageUrl && !newImagePreview && (
+                    <Button variant="danger" type="button" onClick={handleRemoveImage} disabled={loading}>
+                      {loading ? <Spinner size="sm" /> : "Odebrat obrázek"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              <Button variant="primary" type="submit" loading={loading} className="inline-flex items-center">
+                {loading ? (
+                  <>
+                    <Spinner size="sm" />
+                    <span> Ukládám...</span>
+                  </>
+                ) : (
+                  "Uložit změny"
+                )}
+              </Button>
+
+              <Button variant="ghost" type="button" onClick={() => navigate(-1)} disabled={loading}>
+                Zpět
+              </Button>
+
+              {/* show file error on the right if present */}
+              {fileError && <div className="ml-auto text-sm text-red-600">{fileError}</div>}
+            </div>
+          </form>
+        </Card>
+      </div>
+    </Container>
   );
 }

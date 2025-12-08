@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import Spinner from "../components/Spinner";
+import { Button, Input } from "../components";
 
 export default function RequestReset() {
   const { resetPassword } = useAuth();
@@ -59,25 +60,23 @@ export default function RequestReset() {
       >
         <div>
           <label className="block text-sm font-medium text-gray-700">E-mail</label>
-          <input
+          <Input
             type="email"
             value={email}
             autoComplete="email"
             required
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="mt-1 w-full p-2 rounded-md border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300"
-          />
+            />
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70"
-        >
+          >
           {loading && <Spinner size={16} />}
           <span>{loading ? "Odesílám…" : "Poslat reset odkaz"}</span>
-        </button>
+        </Button>
       </form>
     </div>
   );

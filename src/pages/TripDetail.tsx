@@ -1,10 +1,10 @@
-// src/pages/TripDetail.tsx
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useTrips } from "../context/TripsContext";
 import TripCard from "../components/TripCard";
 import Spinner from "../components/Spinner";
 import type { Trip } from "../data/trips";
+import { Button } from "../components";
 
 export default function TripDetail() {
   const { id } = useParams<{ id: string }>();
@@ -83,22 +83,18 @@ export default function TripDetail() {
         </div>
 
         <div className="flex items-center gap-3 mt-4">
-          <button
+          <Button 
             onClick={() => navigate(`/edit/${trip.id}`, { state: { trip } })}
-            disabled={loading}
-            className="px-4 py-2 rounded bg-yellow-500 text-white hover:bg-yellow-600 disabled:opacity-70"
-          >
-            Upravit
-          </button>
-
-          <button
+            disabled={loading}>
+              Upravit
+          </Button>
+          <Button
             onClick={handleDelete}
             disabled={loading}
-            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-70 inline-flex items-center gap-2"
-          >
+            >
             {loading ? <Spinner size={16} /> : null}
             <span>{loading ? "Mažu..." : "Smazat"}</span>
-          </button>
+          </Button>
 
           <Link
             to="/trips"

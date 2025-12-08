@@ -1,7 +1,16 @@
-export default function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+import React from "react";
+import clsx from "clsx";
+
+export default function Card({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`bg-white shadow-sm border rounded-lg overflow-hidden ${className}`}>
+    <article className={clsx("bg-white border rounded-lg overflow-hidden shadow-sm", className)}>
       {children}
-    </div>
+    </article>
   );
 }

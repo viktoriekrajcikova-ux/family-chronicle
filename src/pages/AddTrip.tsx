@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTrips } from "../context/TripsContext";
 import { uploadTripImage } from "../services/tripsService";
+import { Button, Input } from "../components";
 
 export default function AddTrip() {
   const { addTrip } = useTrips();
@@ -61,7 +62,7 @@ export default function AddTrip() {
       <form onSubmit={handleSubmit}>
         <label>
           Název:
-          <input
+          <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -80,7 +81,7 @@ export default function AddTrip() {
 
         <label>
           Datum:
-          <input
+          <Input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
@@ -90,7 +91,7 @@ export default function AddTrip() {
 
         <label>
           Obrázek:
-          <input
+          <Input
             type="file"
             accept="image/*"
             onChange={(handleFileChange)}
@@ -112,16 +113,15 @@ export default function AddTrip() {
               }}
             />
             <br />
-            <button type="button" onClick={handleRemoveImage}>
+            <Button variant="primary" onClick={handleRemoveImage}>
               Odebrat obrázek
-            </button>
+            </Button>
           </div>
         )}
 
-        <button type="submit" disabled={loading}>
+        <Button variant="primary" type="submit" loading={loading}>
           {loading ? "Ukládám..." : "Uložit výlet"}
-        </button>
-
+        </Button>
         {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
     </div>

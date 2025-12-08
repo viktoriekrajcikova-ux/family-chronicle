@@ -1,8 +1,8 @@
-// src/pages/ChangePassword.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Spinner from "../components/Spinner";
+import { Button, Input } from "../components";
 
 export default function ChangePassword() {
   const { updatePassword } = useAuth(); // expected: (newPassword: string) => Promise<void>
@@ -76,11 +76,10 @@ export default function ChangePassword() {
       <form onSubmit={handleSubmit} className={`${loading ? "opacity-60 pointer-events-none" : ""} space-y-4`}>
         <div>
           <label className="block text-sm font-medium text-gray-700">Nové heslo</label>
-          <input
+          <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300 p-2"
             placeholder="Zadej nové heslo"
             required
             minLength={MIN_LENGTH}
@@ -92,11 +91,10 @@ export default function ChangePassword() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Nové heslo znovu</label>
-          <input
+          <Input
             type="password"
             value={password2}
             onChange={(e) => setPassword2(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300 p-2"
             placeholder="Zadej heslo znovu"
             required
             autoComplete="new-password"
@@ -104,23 +102,17 @@ export default function ChangePassword() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="submit"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70"
-            disabled={loading}
-          >
-            {loading && <Spinner size={16} />}
+          <Button variant="primary" type="submit" loading={loading}>
+             {loading && <Spinner size={16} />}
             <span>{loading ? "Ukládám..." : "Změnit heslo"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="px-3 py-2 rounded border bg-white"
-            disabled={loading}
-          >
+          </Button>
+          <Button 
+          type="button"
+          variant="secondary"
+          onClick={() => navigate(-1)}
+          disabled={loading}>
             Zpět
-          </button>
+          </Button>
         </div>
       </form>
     </div>

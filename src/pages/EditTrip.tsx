@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTrips } from "../context/TripsContext";
 import { uploadTripImage, deleteTripImage } from "../services/tripsService";
-import type { Trip } from "../data/trips";
+import { Button, Input } from "../components";
 import Spinner from "../components/Spinner"; 
 
 export default function EditTrip() {
@@ -143,15 +143,15 @@ export default function EditTrip() {
         
         <div>
           <label className="block text-sm font-medium text-gray-700">Název</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300" />
+          <Input value={title} onChange={e => setTitle(e.target.value)} required />
         </div>
 
         <div className="flex items-center gap-3">
-          <button type="submit" disabled={loading || !!fileError} className="inline-flex items-center gap-2 px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-70">
+          <Button type="submit" disabled={loading || !!fileError}>
             {loading ? <Spinner size={18} /> : null}
             <span>{loading ? "Ukládám..." : "Uložit změny"}</span>
-          </button>
-          <button type="button" onClick={() => navigate(-1)} className="px-3 py-2 rounded border bg-white" disabled={loading}>Zpět</button>
+          </Button>
+          <Button type="button" onClick={() => navigate(-1)} disabled={loading}>Zpět</Button>
         </div>
       </form>
     </div>

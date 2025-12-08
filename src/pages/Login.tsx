@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Spinner from "../components/Spinner";
+import { Button, Input } from "../components";
 
 export default function Login() {
   const { signIn, loading: authLoading } = useAuth(); // očekáváme signIn(email,password): Promise<void>
@@ -45,28 +46,26 @@ export default function Login() {
       <form onSubmit={handleSubmit} className={`${isLoading ? "opacity-60 pointer-events-none" : ""} space-y-4`}>
         <div>
           <label className="block text-sm font-medium text-gray-700">E-mail</label>
-          <input
+          <Input
             type="email"
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="tvuj@email.cz"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300 p-2"
-          />
+            />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Heslo</label>
-          <input
+          <Input
             type="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             placeholder="••••••••"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300 p-2"
-          />
+            />
         </div>
 
         <div className="flex items-center justify-between">
@@ -76,14 +75,12 @@ export default function Login() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+          <Button
             type="submit"
-            disabled={isLoading}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70"
-          >
+            disabled={isLoading}>
             {isLoading && <Spinner size={16} />}
             <span>{isLoading ? "Přihlašuji…" : "Přihlásit se"}</span>
-          </button>
+          </Button>
 
           <Link
             to="/register"

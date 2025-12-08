@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Spinner from "../components/Spinner";
+import { Button, Input } from "../components";
 
 export default function Register() {
   const { signUp, loading: authLoading } = useAuth(); // očekáváme signUp(email,password): Promise<void>
@@ -97,26 +98,26 @@ export default function Register() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Heslo znovu</label>
-          <input
+          <Input
             type="password"
             autoComplete="new-password"
             value={password2}
             onChange={(e) => setPassword2(e.target.value)}
             placeholder="Zadej heslo znovu"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-300 p-2"
-          />
+            required            
+            >
+          </Input>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="submit"
+          <Button
+            variant="primary"
             disabled={isLoading}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70"
+            type="submit"
           >
             {isLoading && <Spinner size={16} />}
             <span>{isLoading ? "Zakládám účet…" : "Zaregistrovat se"}</span>
-          </button>
+          </Button>
 
           <Link to="/login" className="ml-auto text-sm px-3 py-2 rounded border bg-white hover:bg-gray-50">
             Už máš účet? Přihlásit se

@@ -14,11 +14,12 @@ import RequestReset from "./pages/RequestReset";
 import ResetConfirm from "./pages/ResetConfirm";
 import Navbar from "./components/Navbar";
 import About from "./pages/About";
+import { Container } from "./components";
 
 export default function App() {
 
   return (
-    <div>
+    <Container>
       <Navbar />
 
 
@@ -59,6 +60,6 @@ export default function App() {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="*" element={<h1>Not Found</h1>} />
       </Routes>
-    </div>
+    </Container>
   );
 }

@@ -1,12 +1,15 @@
+// src/components/Card.tsx
 import React from "react";
 import clsx from "clsx";
+import CardBase from "./CardBase";
+import styles from "./Card.module.css";
 
 interface CardProps {
   children: React.ReactNode;
   className?: string;
   padded?: boolean;
-  hover?: boolean;      
-  onClick?: () => void;  
+  hover?: boolean;
+  onClick?: () => void;
 }
 
 export default function Card({
@@ -17,16 +20,16 @@ export default function Card({
   onClick,
 }: CardProps) {
   return (
-    <article
+    <CardBase
+      hover={hover}
       onClick={onClick}
       className={clsx(
-        "bg-white border border-gray-200 rounded-xl shadow-sm transition",
-        hover && "hover:shadow-md hover:-translate-y-[1px] cursor-pointer",
-        padded && "p-4 sm:p-6",
+        styles.card,
+        padded && styles.padded,
         className
       )}
     >
       {children}
-    </article>
+    </CardBase>
   );
 }

@@ -1,0 +1,18 @@
+/* src/components/tripCard/Card.module.css */
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.padded {
+  padding: 20px;
+}
+
+/* trochu víc prostoru na větších obrazovkách */
+@media (min-width: 640px) {
+  .padded {
+    padding: 24px;
+  }
+}

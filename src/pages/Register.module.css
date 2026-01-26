@@ -1,0 +1,51 @@
+/* src/pages/Register.module.css */
+
+.wrapper {
+  max-width: 420px;
+  margin: 48px auto;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #111827;
+}
+
+.success {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 6px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: 14px;
+}
+
+.error {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 6px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}

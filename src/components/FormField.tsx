@@ -1,5 +1,7 @@
+// src/components/FormField.tsx
 import React from "react";
 import clsx from "clsx";
+import styles from "./FormField.module.css";
 
 interface FormFieldProps {
   label: string;
@@ -21,31 +23,21 @@ export function FormField({
   className,
 }: FormFieldProps) {
   return (
-    <div className={clsx("flex flex-col gap-1", className)}>
-      <label
-        htmlFor={id}
-        className="text-sm font-medium text-gray-700 flex items-center gap-1"
-      >
+    <div className={clsx(styles.field, className)}>
+      <label htmlFor={id} className={styles.label}>
         {label}
-        {required && <span className="text-red-600">*</span>}
+        {required && <span className={styles.required}>*</span>}
       </label>
 
-      {/* pole (Input, textarea, select...) */}
+      {/* Input / textarea / select */}
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(child as any, { id })
+          ? React.cloneElement(child as React.ReactElement<any>, { id })
           : child
       )}
 
-      {/* pomocný text */}
-      {hint && !error && (
-        <div className="text-xs text-gray-500">{hint}</div>
-      )}
-
-      {/* chybová hláška */}
-      {error && (
-        <div className="text-xs text-red-600">{error}</div>
-      )}
+      {hint && !error && <div className={styles.hint}>{hint}</div>}
+      {error && <div className={styles.error}>{error}</div>}
     </div>
   );
 }

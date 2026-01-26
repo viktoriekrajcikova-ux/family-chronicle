@@ -1,0 +1,151 @@
+/* src/components/Navbar.module.css */
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 64px;
+}
+
+/* LOGO */
+.logo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dot {
+  color: #6366f1;
+}
+
+/* DESKTOP NAV */
+.desktopNav {
+  display: none;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .desktopNav {
+    display: flex;
+  }
+}
+
+/* LINKS */
+.link {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.link:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* RIGHT */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.email {
+  display: none;
+  font-size: 0.875rem;
+  color: #6b7280;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 640px) {
+  .email {
+    display: block;
+  }
+}
+
+.logout {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .logout {
+    display: inline-flex;
+  }
+}
+
+/* BURGER */
+.burger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  color: #4b5563;
+  transition: background-color 0.2s;
+}
+
+.burger:hover {
+  background: #f3f4f6;
+}
+
+@media (min-width: 768px) {
+  .burger {
+    display: none;
+  }
+}
+
+/* MOBILE MENU */
+.mobileMenu {
+  padding: 16px 0;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobileLink {
+  font-size: 0.875rem;
+  color: #374151;
+  text-decoration: none;
+}
+
+.mobileLink:hover {
+  color: #111827;
+}
+
+.mobileEmail {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.mobileLogout {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.875rem;
+  color: #374151;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mobileLogout:hover {
+  color: #111827;
+}

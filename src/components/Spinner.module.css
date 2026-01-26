@@ -1,0 +1,36 @@
+.spinner {
+  border-radius: 50%;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #d1d5db;          /* gray-300 */
+  border-top-color: #4f46e5;      /* indigo-600 */
+  animation: spin 0.8s linear infinite;
+}
+
+/* velikosti */
+.sm {
+  width: 16px;
+  height: 16px;
+}
+
+.md {
+  width: 24px;
+  height: 24px;
+}
+
+.lg {
+  width: 32px;
+  height: 32px;
+}
+
+.xl {
+  width: 40px;
+  height: 40px;
+}
+
+/* animace */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

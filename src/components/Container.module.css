@@ -1,0 +1,35 @@
+/* src/components/Container.module.css */
+
+.container {
+  max-width: 1120px; /* cca max-w-5xl */
+  margin-left: auto;
+  margin-right: auto;
+
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* větší padding na větších obrazovkách */
+@media (min-width: 640px) {
+  .container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+/* CENTER VARIANTA – jen když chceš */
+.center {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}

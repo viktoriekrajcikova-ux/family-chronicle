@@ -1,138 +1,126 @@
-import { useState, useEffect, useRef } from "react";
+// src/components/Navbar.tsx
+import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import Button from "./Button";
 import Container from "./Container";
-import clsx from "clsx";
+import Button from "./Button";
+import styles from "./Navbar.module.css";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
-  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  // close mobile menu on route change
+  // zavřít menu při změně routy
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
 
-  // close on Escape
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  const linkClass = (isActive: boolean) =>
-    clsx(
-      "px-3 py-2 rounded-md text-sm font-medium transition",
-      isActive ? "bg-indigo-600 text-white" : "text-gray-700 hover:bg-gray-100"
-    );
-
   return (
-    <nav className="bg-white border-b">
-      <Container className="px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <NavLink to="/" className="text-xl font-semibold text-gray-900 hover:text-indigo-600 transition">
-            Family Chronicle
+    <Container>
+      <div className={styles.bar}>
+        {/* LOGO */}
+        <NavLink to="/" className={styles.logo}>
+          Family Chronicle <span className={styles.dot}>•</span>
+        </NavLink>
+
+        {/* DESKTOP NAV */}
+        <nav className={styles.desktopNav}>
+          <NavLink to="/trips" className={styles.link}>
+            Výlety
           </NavLink>
+          <NavLink to="/add" className={styles.link}>
+            Přidat
+          </NavLink>
+          <NavLink to="/about" className={styles.link}>
+            O nás
+          </NavLink>
+        </nav>
 
-          {/* Desktop menu */}
-          <div className="hidden sm:flex items-center gap-3">
-            <NavLink to="/trips" className={({ isActive }) => linkClass(isActive)}>
-              Výlety
-            </NavLink>
+        {/* RIGHT SIDE */}
+        <div className={styles.right}>
+          {user && (
+            <span className={styles.email}>{user.email}</span>
+          )}
 
-            <NavLink to="/add" className={({ isActive }) => linkClass(isActive)}>
-              Přidat
-            </NavLink>
-
-            {user ? (
-              <>
-                <span className="text-sm text-gray-500 hidden sm:block">{user.email}</span>
-                <Button variant="ghost" className="text-sm" onClick={signOut}>
-                  Odhlásit
-                </Button>
-              </>
-            ) : (
-              <>
-                <NavLink to="/login" className={({ isActive }) => linkClass(isActive)}>
-                  Přihlásit
-                </NavLink>
-                <NavLink to="/register" className={({ isActive }) => linkClass(isActive)}>
-                  Registrovat
-                </NavLink>
-              </>
-            )}
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="sm:hidden">
-            <button
-              ref={menuButtonRef}
-              type="button"
-              aria-label="Otevřít menu"
-              aria-expanded={open}
-              onClick={() => setOpen((v) => !v)}
-              className="p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          {user ? (
+            <Button
+              variant="ghost"
+              className={styles.logout}
+              onClick={signOut}
             >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                {open ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
-        </div>
-      </Container>
+              Odhlásit
+            </Button>
+          ) : (
+            <NavLink to="/login" className={styles.link}>
+              Přihlásit
+            </NavLink>
+          )}
 
-      {/* Mobile menu */}
-      <div
-        className={clsx("sm:hidden border-t bg-white transition-max-height duration-200 overflow-hidden", {
-          "max-h-96": open,
-          "max-h-0": !open,
-        })}
-        aria-hidden={!open}
-      >
-        <div className="px-2 pt-2 pb-3 space-y-1">
-          <NavLink to="/trips" onClick={() => setOpen(false)} className={({ isActive }) => linkClass(isActive)}>
+          {/* BURGER */}
+          <button
+            onClick={() => setOpen(v => !v)}
+            aria-label="Otevřít menu"
+            className={styles.burger}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              {open ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* MOBILE MENU */}
+      {open && (
+        <div className={styles.mobileMenu}>
+          <NavLink to="/trips" className={styles.mobileLink}>
             Výlety
           </NavLink>
 
-          <NavLink to="/add" onClick={() => setOpen(false)} className={({ isActive }) => linkClass(isActive)}>
+          <NavLink to="/add" className={styles.mobileLink}>
             Přidat
+          </NavLink>
+
+          <NavLink to="/about" className={styles.mobileLink}>
+            O nás
           </NavLink>
 
           {user ? (
             <>
-              <div className="px-3 py-2 text-sm text-gray-600">Signed in as <span className="font-medium">{user.email}</span></div>
+              <div className={styles.mobileEmail}>{user.email}</div>
               <button
-                onClick={() => {
-                  setOpen(false);
-                  signOut();
-                }}
-                className="block w-full text-left px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100"
+                onClick={signOut}
+                className={styles.mobileLogout}
               >
                 Odhlásit
               </button>
             </>
           ) : (
-            <>
-              <NavLink to="/login" onClick={() => setOpen(false)} className={({ isActive }) => linkClass(isActive)}>
-                Přihlásit
-              </NavLink>
-              <NavLink to="/register" onClick={() => setOpen(false)} className={({ isActive }) => linkClass(isActive)}>
-                Registrovat
-              </NavLink>
-            </>
+            <NavLink to="/login" className={styles.mobileLink}>
+              Přihlásit
+            </NavLink>
           )}
         </div>
-      </div>
-    </nav>
+      )}
+    </Container>
   );
 }

@@ -1,0 +1,62 @@
+/* src/pages/Home.module.css */
+
+/* HERO */
+.hero {
+  width: 100%;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.heroInner {
+  padding: 64px 0;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #111827;
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: 3rem;
+  }
+}
+
+.subtitle {
+  max-width: 640px;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+/* ACTIONS */
+.actions {
+  margin-top: 32px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .actions {
+    flex-direction: row;
+  }
+}
+
+/* FOOT NOTE */
+.footerNote {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}

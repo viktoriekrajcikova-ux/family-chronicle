@@ -1,0 +1,103 @@
+/* src/components/Button.module.css */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 8px 16px;
+  border-radius: 10px;
+
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  border: none;
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ---------- VARIANTS ---------- */
+
+.primary {
+  background: #4f46e5;
+  color: white;
+}
+
+.primary:hover:not(:disabled) {
+  background: #4338ca;
+}
+
+.primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+}
+
+.secondary {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.secondary:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.secondary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.25);
+}
+
+.danger {
+  background: #dc2626;
+  color: white;
+}
+
+.danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.danger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
+}
+
+.ghost {
+  background: transparent;
+  color: #374151;
+}
+
+.ghost:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.ghost:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.25);
+}
+
+/* ---------- STATES ---------- */
+
+.fullWidth {
+  width: 100%;
+}
+
+.loading {
+  pointer-events: none;
+}
+
+/* aby se text nehýbal při spinneru */
+.label {
+  display: inline-flex;
+  align-items: center;
+}

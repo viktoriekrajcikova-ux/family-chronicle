@@ -1,11 +1,13 @@
+// src/components/Container.tsx
 import React from "react";
 import clsx from "clsx";
+import styles from "./Container.module.css";
 
 interface ContainerProps {
   children: React.ReactNode;
   className?: string;
   as?: React.ElementType;
-  center?: boolean; // text-align + flex columns center
+  center?: boolean; // centrovaný obsah (např. homepage)
 }
 
 export default function Container({
@@ -17,8 +19,8 @@ export default function Container({
   return (
     <Component
       className={clsx(
-        "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8",
-        center && "text-center flex flex-col items-center",
+        styles.container,
+        center && styles.center,
         className
       )}
     >

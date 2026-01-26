@@ -1,0 +1,66 @@
+/* src/pages/TripDetail.module.css */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 48px 0;
+}
+
+/* 100 % mobile, 50 % tablet+ */
+.cardWrapper {
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .cardWrapper {
+    width: 50%;
+  }
+}
+
+.loading {
+  padding: 64px 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* ACTIONS */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .actions {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.backLink {
+  font-size: 14px;
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.error {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 14px;
+}

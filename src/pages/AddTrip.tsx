@@ -25,11 +25,11 @@ export default function AddTrip() {
     });
 
     if (!newTrip) {
-      toast.error("Nepodařilo se uložit výlet");
+      toast.push("Nepodařilo se uložit výlet", { type: "error" });
       return;
     }
 
-    toast.success("Výlet uložen");
+    toast.push("Výlet uložen", { type: "success" });
     navigate(`/trips/${newTrip.id}`);
   };
 
